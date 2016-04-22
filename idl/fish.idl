@@ -1,0 +1,16 @@
+namespace java org.pnb.java.service.thrift
+namespace ruby org.pnb.ruby.service.thrift
+
+
+typedef i32 int
+
+struct Result
+{
+	1: int status,
+	2: string content,
+}
+
+service Fishing
+{
+   Result getfishes(1:string url, 2:int timeout2),
+}

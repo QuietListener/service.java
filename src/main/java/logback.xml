@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="60 seconds">
+	<!-- 应用名称 -->
+	<!-- TODO 修改value -->
+	<property name="APP_NAME" value="baicizhan" />
+	
+	<!--日志文件的保存路径,首先查找系统属性-Dlog.dir,如果存在就使用其；否则，在当前目录下创建名为logs目录做日志存放的目录 -->
+	<property name="LOG_HOME" value="${log.dir:-logs}" />
+	<!-- 日志输出格式 -->
+	<property name="ENCODER_PATTERN"
+		value="[%d{yyyy-MM-dd HH:mm:ss}] [%X{logid}] [%X{ip}][%X{port}] [%level] [%file:%line] - %msg%n" />
+	<contextName>${APP_NAME}</contextName>
+
+	<!-- 控制台日志：输出全部日志到控制台 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>${ENCODER_PATTERN}</Pattern>
+		</encoder>
+	</appender>
+
+	<!-- 文件日志：输出全部日志到文件 -->
+	<appender name="OUTPUT_FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/output.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/output.log.%d{yyyyMMddHH}</fileNamePattern>
+			<maxHistory>24</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${ENCODER_PATTERN}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">  
+            <evaluator>  
+                <expression>INFO>=level</expression>  
+            </evaluator>  
+            <onMatch>ACCEPT</onMatch>  
+            <onMismatch>DENY</onMismatch>  
+        </filter>
+		<!-- TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF -->
+		<!-- 
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
+		 -->
+	</appender>
+
+	<!-- 错误日志：用于将错误日志输出到独立文件 -->
+	<appender name="ERROR_FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARN</level>
+		</filter>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">         
+	      <evaluator> <!-- 默认为 ch.qos.logback.classic.boolex.JaninoEventEvaluator -->   
+	       <!-- disable thrift read or write on a socket that is closed 
+	        Got an IOException during write!  
+	        Got an IOException in internalRead!
+	         -->
+	        <expression>return message.contains("Got an IOException");</expression> 
+	      </evaluator>   
+	      <OnMatch>DENY</OnMatch>  
+	      <OnMismatch>ACCEPT</OnMismatch>  
+	    </filter>
+		<file>${LOG_HOME}/error.log</file>
+		<append>true</append>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/error.log.%d{yyyyMMddHH}</fileNamePattern>
+			<maxHistory>240</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${ENCODER_PATTERN}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 调试日志：用于过滤一些关键字 -->
+	<appender name="DEBUG_FILE"  class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>${LOG_HOME}/debug.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/debug.log.%d{yyyyMMdd}</fileNamePattern>
+			<maxHistory>24</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${ENCODER_PATTERN}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">  
+            <evaluator>  
+                <expression>message.contains("")</expression>  
+            </evaluator>  
+            <onMatch>ACCEPT</onMatch>  
+            <onMismatch>DENY</onMismatch>  
+        </filter>
+	</appender>
+	
+	<logger name="debug" level="DEBUG" additivity="false">
+		<appender-ref ref="DEBUG_FILE" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="ERROR_FILE" />
+		<appender-ref ref="OUTPUT_FILE" />
+	</logger>
+	
+	<root additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="OUTPUT_FILE" />
+		<appender-ref ref="ERROR_FILE" />
+	</root>
+</configuration>
