@@ -7,6 +7,7 @@ public class FinshingHandler implements Fishing.Iface {
 
 	public Result getfishes(String url, int timeout2) throws TException {
 		
+		System.out.println("url:"+url);
 		Result r = new Result();
 		try {
 			Utils.FResponse response = Utils.getResponse(url, timeout2);
@@ -17,6 +18,7 @@ public class FinshingHandler implements Fishing.Iface {
 			r.setStatus(-1);
 		}
 		
+		System.out.println("result:"+r);
 		return r;
 	}
 
